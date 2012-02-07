@@ -1,0 +1,101 @@
+<html>
+<head>
+<style>
+html, body, div {
+	padding: 0;
+	margin: 0;
+	user-select: none;	
+	-webkit-user-select: none;
+}
+body {
+	background: #999;
+	position: relative;
+}
+
+div {
+	display: block;
+	border: 1px solid #999;
+	top: 0;
+	left: 0;
+}
+
+#wrapper {
+	height: 100%;
+	width: 100%;
+}
+	
+#left-column {
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	width: 400px;
+	overflow: auto;
+}
+
+#right-column {
+	position: absolute;
+	background: #5E5C5F;
+	top: 0;
+	bottom: 0;
+	left: 400px;
+	right: 0;
+	width: 400px;
+	overflow: auto;
+}
+
+
+
+#left-column > div,
+#right-column > div {
+	position: relative;
+	width : 300px;
+	height : 40px;
+	margin: 30px;
+}
+
+div.dragging {
+	opacity : 0.3;
+}
+
+div.selected {
+	border: 1px solid #3A3599;
+}
+
+#marker {
+	position: absolute;
+	width: 300px;
+	height: 10px;
+	background: #993F4A;
+	display: none;
+}
+#marker.active {
+	display: block;
+}
+
+
+
+</style>
+<script src="./lib/underscore.js" type="text/javascript" charset="utf-8"></script>
+<script src="./lib/jquery-1.7.1.js" type="text/javascript" charset="utf-8"></script>
+<script src="./lib/backbone.js" type="text/javascript" charset="utf-8"></script>
+<script src="../sortive.js" type="text/javascript" charset="utf-8"></script>	
+
+</head>
+<body>
+	<div id='wrapper'>
+		<div id='marker'></div>
+		<div id='left-column'>			
+		</div>
+		<div id='right-column'>
+		</div>
+	</div>
+<script src='main.js'></script>
+</body>
+</html>
+
+
+
+
+
+
