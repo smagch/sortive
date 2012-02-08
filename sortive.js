@@ -12,6 +12,8 @@
     cloneClass : 'dragging',
     selectClass : 'selected',
     
+    delay : 100,
+    
     acceptive : true,
     // could be selector string, element, 
     // array of elements or jquery object
@@ -26,6 +28,8 @@
   
   // store all sortive element
   container = [ ],
+  
+  //timeoutId = undefined,
   
   // isUpped = true,  
   
@@ -76,7 +80,7 @@
         _.each(container, function(sortive) {
           var options = $(sortive).data('sortive');
           if(!$self.is(sortive) ) {
-            // TODO - test acceptiveFrom is correctly performed
+            // TODO - test if acceptiveFrom is correctly performed
             options.acceptive && ( options.acceptiveFrom === '*' || 
               $(options.acceptiveFrom).is(sortive) ) && ret.push(sortive);
           } else {
@@ -119,25 +123,48 @@
       }		  
 		  
     	return {
+    	  // bounding rect of sortive instance
     	  rect : rect,
-    	  children : dimensions,
-    	  isSelfSort : isSelfSort,
+    	  children : dimensions,    	  
+    	  isSelfSort : isSelfSort,    	  
     	  $el : $sortive
     	};     	
     });
   },
   
   downHandler = function(e) {
-    // if missed mouseup event excute it ?
     
+    // TODO - when missed mouseup event, should excute upHandler    
     // if( $el ) {
      //   throw new Error('$el is not removed')
      //   mouseUpHandler.call(this);
      // }  
      //options = e.data,
-  	var $self = $(this),
-  	$sortive = $(e.delegateTarget),
+     //_.bind(startDrag, this, e)
+    var timeoutId,
+      self = this,
+      delay = $(e.delegateTarget).data('sortive').delay;
+    
+    function timeoutHandler(e) {
+      if(timeoutId) {
+        console.log('timeout!');
+        clearTimeout(timeoutId);
+      }
+    }
+          	
+  	timeoutId = setTimeout(function() {
+  	  timeoutId = undefined;
+  	  $(document).off('mouseup.sortive', timeoutHandler);
+  	  startDrag.call(self, e);
+  	}, delay);
+  	  	
+  	$(document).one('mouseup.sortive', timeoutHandler);
+  },
+  
+  startDrag = function(e) {    
+    var $sortive = $(e.delegateTarget),
   	options = $sortive.data('sortive'),
+  	$self = $(this),
     offset = $self.offset(),
     w = $self.width(),
     h = $self.height(),
@@ -186,6 +213,9 @@
   },
   
   upHandler = function(e) {
+    // if dragStart is not started, return
+
+    
     $(document)
   		.off('mousemove.sortive', moveHandler)
   		.off('mouseup.sortive', upHandler);

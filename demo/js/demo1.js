@@ -1,12 +1,6 @@
 (function($, _, Backbone, undefined){
   
 
-// jQuery plugin 
-
-
-
-
-
 var PlaneModel = Backbone.Model.extend({});
 var PlaneCollection = Backbone.Collection.extend({
   model : PlaneModel
@@ -141,12 +135,10 @@ var PlaneListView = Backbone.View.extend({
       var json = model.toJSON();
       console.log('indexToInsert : ' + indexToInsert);
       
-      _.defer( _.bind( function() {
-        this.collection.add(json, {
-          at : indexToInsert
-        });
-      }, this ));
-
+      
+      this.collection.add(json, {
+        at : indexToInsert
+      });      
     }
   });
   
