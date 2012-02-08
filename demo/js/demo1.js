@@ -106,6 +106,7 @@ var PlaneListView = Backbone.View.extend({
       
     },
     focusOut : function(e, data) {
+      console.log('focusout');
       $('#marker').removeClass('active');
     },
     setMarker : function(e, data) {
@@ -116,17 +117,21 @@ var PlaneListView = Backbone.View.extend({
         $('#marker').removeClass('active');
       } else {
         // TODO
-        
-        var offset = data.direction === 'up' ? 20 : -20;
-        var css = offset + data.dimension.top;
-
-        console.log('css : ' + css);
-
-        $('#marker')
-        .addClass('active')
-        .css({
-          top : css
-        });        
+        // offset
+        var offset = -20;
+        var top = data.dimension.top;
+        if(top) {
+          top += offset;
+        } else {
+          var last = this.$el.children(':last-child');
+          top =  last.offset().top + last.height() - offset;
+        }
+                                                  
+         $('#marker')
+         .addClass('active')
+         .css({
+           top : top
+         });        
       }
     },   
     moveItem : function(e, data) {

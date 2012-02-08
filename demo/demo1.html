@@ -31,7 +31,9 @@ div {
 	bottom: 0;
 	width: 400px;
 	overflow: auto;
+/*	padding-bottom: 200px;*/
 }
+
 
 #right-column {
 	position: absolute;
@@ -52,6 +54,12 @@ div {
 	width : 300px;
 	height : 40px;
 	margin: 30px;
+}
+#left-column:after {
+	content : '';
+	display : block;
+	height : 300px;
+	width: 100%;
 }
 
 div.dragging {
