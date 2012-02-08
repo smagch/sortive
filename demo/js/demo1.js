@@ -54,15 +54,13 @@ var PlaneListView = Backbone.View.extend({
     var view = new PlaneView({model: model});
     var index = this.collection.indexOf(model);
     //this.$el.append(view.render().el);
-    var target = this.$el.children(view.tagName + ':nth-child(' + index + ')');
+    var target = this.$el.children(view.tagName + ':nth-child(' + (index + 1) + ')');
     if(target.length) {
       console.log('target length');
-      view.render().$el.insertAfter(target);
+      view.render().$el.insertBefore(target);
     } else {
       this.$el.append(view.render().el);
-    }
-    
-    
+    }        
   },
   addView : function(view) {
     var model = view
@@ -102,7 +100,7 @@ var PlaneListView = Backbone.View.extend({
   var LeftView = PlaneListView.extend({    
     el : '#left-column',
     initialize : function(options) {
-      this.collection = new PlaneCollection(getModels(2));
+      this.collection = new PlaneCollection(getModels(10));
       this.$el
       .sortive()
       .on('indexchange', function(e, data) {
@@ -141,7 +139,8 @@ var PlaneListView = Backbone.View.extend({
       var model = this.collection.at(currentIndex);
       this.collection.remove(model);
       var json = model.toJSON();
-
+      console.log('indexToInsert : ' + indexToInsert);
+      
       _.defer( _.bind( function() {
         this.collection.add(json, {
           at : indexToInsert
