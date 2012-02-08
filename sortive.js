@@ -212,10 +212,7 @@
   		.on('mouseup.sortive', data, upHandler);
   },
   
-  upHandler = function(e) {
-    // if dragStart is not started, return
-
-    
+  upHandler = function(e) {        
     $(document)
   		.off('mousemove.sortive', moveHandler)
   		.off('mouseup.sortive', upHandler);
@@ -233,8 +230,7 @@
         dataToSend.$target.trigger('itemmove', dataToSend);
       } else {
         e.data.$sortive.trigger('itemsend', dataToSend);
-      }
-      
+      }      
     } 
     
     eventData.clear();
@@ -287,10 +283,15 @@
       return !isOutOfBound(rect.rect, x, y);
     });
     
-    if(targetRect) {
-            
-      var dimensions = targetRect.children;
-      
+    if(!targetRect) {
+      var eData = eventData(),
+          $focusedTarget = eData && eData.$target;
+      if( $focusedTarget ) {
+        $focusedTarget.trigger('sortfocusout');
+      }
+      eventData.clear();      
+    } else {
+      var dimensions = targetRect.children;      
       // if not selfSort, use top
       if( targetRect.isSelfSort && data.$original.offset().top < offset.top ) {
     		direction = 'bottom';

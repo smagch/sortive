@@ -93,36 +93,42 @@ var PlaneListView = Backbone.View.extend({
 
   var LeftView = PlaneListView.extend({    
     el : '#left-column',
-    initialize : function(options) {
-      this.collection = new PlaneCollection(getModels(10));
+    initialize : function(options) {      
       this.$el
       .sortive()
-      .on('indexchange', function(e, data) {
-        console.log('index change catch');
-        console.dir( data );
-        var isOriginal = data.index === data.originalIndex;  
-        if(isOriginal && data.isSelfSort) {
-          $('#marker').removeClass('active');
-        } else {
-          // TODO
-          var offset = data.direction === 'up' ? 20 : -20;
-          var css = offset + data.dimension.top;
-
-          console.log('css : ' + css);
-
-          $('#marker')
-          .addClass('active')
-          .css({
-            top : css
-          });        
-        }  
-      })
-      .on('itemmove', _.bind(this.moveItem, this));
+      .on('indexchange', _.bind(this.setMarker, this))
+      .on('itemmove', _.bind(this.moveItem, this))
+    //  .on('sortfocusin', _.bind(this.focusIn, this))
+      .on('sortfocusout', _.bind(this.focusOut, this));
       PlaneListView.prototype.initialize.call(this, options);
     },
     events : {
       
     },
+    focusOut : function(e, data) {
+      $('#marker').removeClass('active');
+    },
+    setMarker : function(e, data) {
+      console.log('index change catch');
+      console.dir( data );
+      var isOriginal = data.index === data.originalIndex;  
+      if(isOriginal && data.isSelfSort) {
+        $('#marker').removeClass('active');
+      } else {
+        // TODO
+        
+        var offset = data.direction === 'up' ? 20 : -20;
+        var css = offset + data.dimension.top;
+
+        console.log('css : ' + css);
+
+        $('#marker')
+        .addClass('active')
+        .css({
+          top : css
+        });        
+      }
+    },   
     moveItem : function(e, data) {
       console.log('item move');
       $('#marker').removeClass('active');
@@ -146,7 +152,6 @@ var PlaneListView = Backbone.View.extend({
   var RightView = PlaneListView.extend({    
     el : '#right-column',
     initialize : function(options) {
-      this.collection = new PlaneCollection(getModels(4));
       this.$el.sortive({  
         selfSort : false,
         acceptive : false  
@@ -164,10 +169,12 @@ var PlaneListView = Backbone.View.extend({
       this.collection.remove(model);      
     }
   });
-  //$('#left-column').append(divs);
-  //$('#right-column').append(getDivs(20));
-  var Left = new LeftView(),
-      Right = new RightView();
+  var Left = new LeftView({
+    collection : new PlaneCollection(getModels(10))
+  }),
+  Right = new RightView({
+    collection : new PlaneCollection(getModels(10))
+  });
   
 })();
 		
