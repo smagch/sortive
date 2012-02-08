@@ -3,14 +3,14 @@
   // TODO - make clone flag
   // TODO - consider $.data rather than event.data
   // TODO - consider invalidate method 
+  // TODO - add axis
+  // TODO - multi drag 
   var defaults = {
     itemTag : 'div',
     zIndex : 1000,
     appendTo : 'body',
     cloneClass : 'dragging',
     selectClass : 'selected',
-        
-
     
     acceptive : true,
     // could be selector string, element, 
@@ -19,7 +19,7 @@
     
     // TODO - it may be useful to add option like below
     // insertive : true,
-    // insertiveTo : '*',
+    // insertiveTo : '*', // potentially selector, element, jQuery object
     
     selfSort : true
   },
@@ -44,7 +44,6 @@
         .on('mousedown.sortive', options.itemTag, downHandler);
         
       return this;
-      //this.data('sortable', )
     },
     destroy : function() {
       
@@ -197,15 +196,43 @@
     
     
     
-    e.data.$sortive.trigger('drop', {
+    //e.data.$sortive.trigger('itemdropped', eventData());
+    var dataToSend = eventData();
+    if( dataToSend ){
+      if( dataToSend.isSelfSort) {
+        dataToSend.$target.trigger('itemmove', dataToSend);
+      } else {
+        e.data.$sortive.trigger('itemsend', dataToSend);
+      }
       
-      
-    });
+    } 
+    
+    eventData.clear();
   },
+  
+  
   
   isOutOfBound = function(rect, x, y) {
     return x < rect.left || x > rect.right || y < rect.top || y > rect.bottom;
   },
+  
+  eventData = (function(){
+    var _data = { },
+    ret = function(data) {
+      if(!data) {
+        return _data;
+      }
+      if(!_data) {
+        _data = {};
+      }
+      _.extend( _data , data);
+    };
+    
+    ret.clear = function() {
+      _data = undefined;
+    };
+    return ret;      
+  })(),
   
   moveHandler = function(e) {
     var data = e.data,
@@ -243,12 +270,11 @@
     	}
     	    	
     	var index = _.sortedIndex( dimensions[direction], offset[direction]);    	    
-      
+      // TODO - targetRect change
       if(index !== data.currentIndex) {
         data.currentIndex = index;
         
-        //data.$sortive.trigger('indexchange', {
-        targetRect.$el.trigger('indexchange', {
+        eventData({
           originalIndex : data.originalIndex,
           isSelfSort : targetRect.isSelfSort,
           index : index,
@@ -257,8 +283,11 @@
           dimension : {
             top : dimensions.top[index],
             bottom : dimensions.bottom[index]
-          }
+          },
+          $target : targetRect.$el
         });
+        //data.$sortive.trigger('indexchange', {
+        targetRect.$el.trigger('indexchange', eventData());
       }      
     }
     
