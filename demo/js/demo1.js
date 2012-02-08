@@ -10,7 +10,8 @@ var PlaneView = Backbone.View.extend({
   initialize : function() {
     
   },
-  //template : _.template('<div></div>'),
+  
+  
   render : function() {
     this.$el.css(this.model.toJSON());
           
@@ -21,6 +22,7 @@ var PlaneListView = Backbone.View.extend({
   
   initialize : function() {
     //this.collection = new PlaneCollection();
+    this.views = [ ];
     this.collection
       .on('add', this.addItem, this)
       .on('change', this.change, this)
@@ -40,28 +42,63 @@ var PlaneListView = Backbone.View.extend({
     if(_.isArray(model)) {
       model.each(this.createItem);
     } else {
-      this.createItem(model);
+      this.createItem(model, true);
     }
   },
-  createItem : function(model) {
+  
+  // addModel : function(model, index) {
+  //   this.collection.add(model, {
+  //     at :  index,
+  //     silent : true
+  //   });
+  //   var view = new PlaneView({model: model});
+  //   var target = this.$el.children(view.tagName + ':nth-child(' + (index + 1) + ')');
+  //   if(target.length) {
+  //     view.render().$el.hide().insertBefore(target).show(300);
+  //   } else {
+  //     //this.$el.append(view.render().el);
+  //     view.render().$el.hide().appendTo(this.el).show(300);
+  //   }
+  // },
+  removeModel : function(model) {
+    var self = this;
+        index = this.collection.indexOf(model),
+        $viewEl = this.$el.children(':nth-child(' + (index+1) + ')');
+        
+    console.log('index : ' + index);
+    
+    $viewEl.slideUp(300).promise().done(function() {
+      this.remove();
+      self.collection.remove(model);
+    });    
+  },
+  
+  createItem : function(model, anim) {
     console.log('create');
     var view = new PlaneView({model: model});
+    //this.views.push(view);
     var index = this.collection.indexOf(model);
     //this.$el.append(view.render().el);
     var target = this.$el.children(view.tagName + ':nth-child(' + (index + 1) + ')');
     if(target.length) {
-      console.log('target length');
-      view.render().$el.insertBefore(target);
+      // anim potentially index when called by each
+      if(anim === true) {
+        view.render().$el.hide().insertBefore(target).show(300);
+      } else {
+        view.render().$el.insertBefore(target);
+      }      
     } else {
-      this.$el.append(view.render().el);
+      if(anim === true) {
+        view.render().$el.hide().appendTo(this.el).show(300);
+      } else {
+        this.$el.append(view.render().el);
+      }      
     }        
-  },
-  addView : function(view) {
-    var model = view
-  },
+  },  
   render : function() {
     console.log('render');
-    this.$el.html('');
+    //this.$el.html('');
+    this.$el.empty();
     if( this.collection.length ) {                    
       this.collection.each( this.createItem, this );
     } 
@@ -170,12 +207,14 @@ var PlaneListView = Backbone.View.extend({
 
       Left.collection.add(model.toJSON(), {
          at :  data.index
-      });
-      this.collection.remove(model);      
+      });   
+      //Left.addModel(model.toJSON(), data.index);
+      //this.collection.remove(model);
+      this.removeModel(model);
     }
   });
   var Left = new LeftView({
-    collection : new PlaneCollection(getModels(10))
+    collection : new PlaneCollection(getModels(2))
   }),
   Right = new RightView({
     collection : new PlaneCollection(getModels(10))
