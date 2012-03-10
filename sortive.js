@@ -337,11 +337,8 @@
       
       var index = _.sortedIndex( dimensions[direction], offset[direction]);
       // TODO - targetRect change
-      if(index === data.currentIndex) {
-        
-      } else {
+      if( index !== data.currentIndex ) {
         data.currentIndex = index;
-        
         eventData({
           index: {
             from: data.originalIndex,
@@ -357,8 +354,8 @@
           $original: data.$original,
           $target: targetRect.$el
         });
-        //data.$sortive.trigger('indexchange', {
-        if(data.originalIndex === index) {
+        
+        if(data.originalIndex === index && targetRect.isSelfSort) {
           data.$placeholder && data.$placeholder.remove();
         } else if(index !== dimensions.top.length) {
           data.$placeholder || (data.$placeholder = $(data.options.placeholder));
