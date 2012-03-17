@@ -175,7 +175,7 @@
       exclude = data.exclude || '';
     
     // if target doesn't match or exclude item , return
-    if( (match !== '' && !$target.is(match) ) || 
+    if( (match !== '' && !$target.is(match) ) ||
         (exclude !== '') && $target.is(exclude) ) {
       return;
     }
