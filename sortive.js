@@ -24,18 +24,19 @@
     // could be selector string, element,
     // array of elements or jquery object
     acceptiveFrom: '*',
-    
     // TODO - enable self
     placeholder: '<h2>this is pleceholder</h2>',
+    
     // TODO
     // if true, clone is automatically removed,
     // if false, clone is passed when mouseup
     cloneRemove: false,
+    // if false, only sort inside another sortive element
+    selfSort: true
     // TODO - it may be useful to add option like below
     // insertive : true,
     // insertiveTo : '*', // potentially selector, element, jQuery object
-    
-    selfSort: true
+
   },
   
   // store all sortive element
@@ -167,11 +168,13 @@
      //_.bind(startDrag, this, e)
     var timeoutId,
       self = this,
-      data = $(e.delegateTarget).data('sortive'),
+      $delegateTarget = $(e.delegateTarget),
+      data = $delegateTarget.data('sortive'),
       $target = $(e.target),
       match = data.match || '',
       exclude = data.exclude || '';
     
+    // if target doesn't match or exclude item , return
     if( (match !== '' && !$target.is(match) ) || 
         (exclude !== '') && $target.is(exclude) ) {
       return;
@@ -186,6 +189,10 @@
     timeoutId = setTimeout(function() {
       timeoutId = undefined;
       $(document).off('mouseup.sortive', timeoutHandler);
+      $(self).trigger('dragstart', {
+        $target: $target,
+        $delegateTarget: $delegateTarget
+      });
       startDrag.call(self, e);
     }, data.delay);
     
