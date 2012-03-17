@@ -7,13 +7,18 @@
   // TODO - multi drag
   var defaults = {
     item: 'div',
+    // drag specific selector inside item
+    match: '',
+    // drag except selector inside item
+    exclude: 'a',
+    
     zIndex: 1000,
     appendTo: 'body',
     cloneClass: 'dragging',
     selectClass: 'selected',
     // selector
     scrollElement: 'self',
-    delay: 100,
+    delay: 400,
     
     acceptive: true,
     // could be selector string, element,
@@ -35,8 +40,6 @@
   
   // store all sortive element
   container = [ ],
-  
-  //timeoutId = undefined,
   
   // isUpped = true,
   
@@ -60,7 +63,7 @@
       
       this
         .removeData('sortive')
-        .off('mousedown.sortive', downHandler)
+        .off('mousedown.sortive')
         .each(function() {
           var index = _.indexOf(this);
           container.splice(index, 1);
@@ -84,7 +87,6 @@
     },
     
     getAcceptive : function() {
-      
       var ret = [ ];
       this.each(function() {
         var $self = $(this);
@@ -156,7 +158,6 @@
   },
   
   downHandler = function(e) {
-    
     // TODO - when missed mouseup event, should excute upHandler
     // if( $el ) {
      //   throw new Error('$el is not removed')
@@ -166,7 +167,15 @@
      //_.bind(startDrag, this, e)
     var timeoutId,
       self = this,
-      delay = $(e.delegateTarget).data('sortive').delay;
+      data = $(e.delegateTarget).data('sortive'),
+      $target = $(e.target),
+      match = data.match || '',
+      exclude = data.exclude || '';
+    
+    if( (match !== '' && !$target.is(match) ) || 
+        (exclude !== '') && $target.is(exclude) ) {
+      return;
+    }
     
     function timeoutHandler(e) {
       if(timeoutId) {
@@ -178,7 +187,7 @@
       timeoutId = undefined;
       $(document).off('mouseup.sortive', timeoutHandler);
       startDrag.call(self, e);
-    }, delay);
+    }, data.delay);
     
     $(document).one('mouseup.sortive', timeoutHandler);
   },
