@@ -173,19 +173,21 @@
       $target = $(e.target),
       match = data.match || '',
       exclude = data.exclude || '';
-    
+
     // if target doesn't match or exclude item , return
-    if( (match !== '' && !$target.is(match) ) ||
-        (exclude !== '') && $target.is(exclude) ) {
-      return;
+    if( match !== '' && !$target.is(match) && !$target.parents(match).length ) {
+        return;
     }
-    
+    // if target is a item to be excluded, return
+    if(exclude !== '' && $target.is(exclude) ) {
+        return;
+    }
     function timeoutHandler(e) {
       if(timeoutId) {
         clearTimeout(timeoutId);
       }
     }
-    
+
     timeoutId = setTimeout(function() {
       timeoutId = undefined;
       $(document).off('mouseup.sortive', timeoutHandler);
