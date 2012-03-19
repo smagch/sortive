@@ -234,7 +234,7 @@
       .appendTo(options.appendTo),
 
     rects = ( !!acceptives.length && getRects(acceptives, $sortive, index, options)),
-  
+
     data = {
       $original: $self,
       $scrollEl: $scrollEl,
@@ -258,18 +258,17 @@
       .on('mousemove.sortive', data, moveHandler)
       .on('mouseup.sortive', data, upHandler);
   },
-  
+
   upHandler = function(e) {
     $(document)
       .off('mousemove.sortive', moveHandler)
       .off('mouseup.sortive', upHandler);
-    
+
     var data = e.data;
     data.$original.removeClass(data.options.selectClass);
     data.$clone.remove();
     data.$placeholder && data.$placeholder.remove();
-    
-    
+
     //e.data.$sortive.trigger('itemdropped', eventData());
     var dataToSend = eventData();
     if( dataToSend ){
@@ -280,7 +279,6 @@
         e.data.$sortive.trigger('itemsend', dataToSend);
       }
     }
-    
     eventData.clear();
   },
   
@@ -382,7 +380,7 @@
           data.$placeholder || (data.$placeholder = $(data.options.placeholder));
           targetRect.$el.append(data.$placeholder);
         }
-        targetRect.$el.trigger('indexchange', eventData());
+        //targetRect.$el.trigger('indexchange', eventData());
       }
     }
   };
