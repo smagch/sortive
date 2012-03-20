@@ -1,0 +1,81 @@
+<html>
+<head>
+<style>
+html, body, div {
+  padding: 0;
+  margin: 0;
+  user-select: none;  
+  -webkit-user-select: none;
+}
+body {
+  background: #999;
+  position: relative;
+}
+
+.clearfix:before,
+.clearfix:after {
+  display: table;
+  content: "";
+}
+.clearfix:after {
+  clear: both;
+}
+
+.box {
+  border: 5px solid #202020;
+  float: left;
+  width: 100px;
+  height: 200px;
+  background: #A3A3A3;
+  overflow: auto;
+  margin: 50px 20px;
+  padding: 30px;  
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
+}
+
+.item {
+  background: #646099;
+  height: 30px;
+  line-height: 30px;
+  vertical-align: middle;
+  text-align: center;
+  margin: 10px;
+}
+.item.selected {
+  background: #808AB9;
+}
+.item.dragging {
+  opacity: 0.5;
+}
+</style>
+
+<script src="./lib/underscore.js" type="text/javascript" charset="utf-8"></script>
+<script src="./lib/jquery-1.7.1.js" type="text/javascript" charset="utf-8"></script>
+<script src="./lib/backbone.js" type="text/javascript" charset="utf-8"></script>
+<script src="../sortive.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+  <div class='clearfix'>
+    <div id='box1' class='box'></div>
+    <div id='box2' class='box'></div>
+    <div id='box3' class='box'></div>
+    <div id='box4' class='box'></div>
+    <div id='box5' class='box'></div>
+  </div>
+  <div class='clearfix'>
+    <div id='box6' class='box'></div>
+    <div id='box7' class='box'></div>
+    <div id='box8' class='box'></div>
+    <div id='box9' class='box'></div>
+    <div id='box10' class='box'></div>
+  </div>
+<script id='template', type='text/template'>
+  <% _.each(models, function(model) { %>
+    <div class='item'><%= model.string %></div>
+  <% }); %>
+</script>
+<script src="./js/demo2.js" type="text/javascript" charset="utf-8"></script>
+</body>
+</html>

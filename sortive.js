@@ -109,8 +109,8 @@
 
   toGlobal = function(offset, data) {
     return {
-      left: offset.left + data.scrollLeft,
-      top: offset.top + data.scrollTop
+      left: offset.left + data.$scrollEl.scrollLeft(),
+      top: offset.top + data.$scrollEl.scrollTop()
     };
   },
 
@@ -140,6 +140,7 @@
   },
 
   getDimensions = function(rect, data) {
+    console.log('getDimensions');
     var options = data.options,
       dimensions = {
         top : [],
@@ -252,8 +253,6 @@
       height: h,
       originalIndex: index,
       options: options,
-      scrollTop: $scrollEl.scrollTop(),
-      scrollLeft: $scrollEl.scrollLeft(),
       currentIndex : (options.selfSort && index)
     };
 
