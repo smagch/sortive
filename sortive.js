@@ -108,13 +108,13 @@
 
     return _.map($acceptives, function(sortive) {
       var $sortive = $(sortive),
+        isSelfSort = $target.is(sortive),
         offset = $sortive.offset(),
         rect = _.extend( offset, {
           right : offset.left + $sortive.width(),
           bottom : offset.top + $sortive.height()
-        }),
-        isSelfSort = $target.is(sortive);
-      // bounding rects of sortive instance
+        });
+
       return {
         rect: rect,
         $el: $sortive,
@@ -127,6 +127,7 @@
   },
 
   getDimensions = function(rect, data) {
+    console.log('get dimension');
     var options = data.options,
       dimensions = {
         top : [],
@@ -240,6 +241,8 @@
       height: h,
       originalIndex: index,
       options: options,
+      scrollTop: NaN,
+      scrollLeft: NaN,
       currentIndex : (options.selfSort && index)
     };
 
@@ -329,12 +332,21 @@
       data.$placeholder && data.$placeholder.remove();
     } else {
       // if selfsort, add scroll
-      if(targetRect.isSelfSort) {
-        offset.left += $scrollEl.scrollLeft();
-        offset.top += $scrollEl.scrollTop();
+
+      var dimensions = targetRect.children;
+      if(!dimensions) {
+        dimensions = getDimensions(targetRect, data);
+        if(targetRect.isSelfSort) {
+          data.scrollTop = $scrollEl.scrollTop();
+          data.scrollLeft = $scrollEl.scrollLeft();
+        }
       }
 
-      var dimensions = targetRect.children || getDimensions(targetRect, data);
+      if(targetRect.isSelfSort) {
+        offset.left += $scrollEl.scrollLeft() - data.scrollLeft;
+        offset.top += $scrollEl.scrollTop() - data.scrollTop;
+      }
+
       // if not selfSort, use top
       if( targetRect.isSelfSort && data.$original.offset().top < offset.top ) {
         direction = 'bottom';
@@ -380,15 +392,6 @@
   $.fn['sortive'] = function(method) {
     if( methods[method] ) {
       return methods[method].apply(this, Array.prototype.slice.call( arguments, 1 ));
-    } else if( method in defaults ) {
-      if( arguments[1] ) {
-        // options setter
-        return methods.options.call(this, {
-          method : arguments[1]
-        });
-      }
-      // options getter
-      return methods.options.call(this)[method];
     } else if( typeof method === 'object' || !method ){
       return methods['init'].apply(this, arguments);
     } else {
