@@ -6,6 +6,7 @@ html, body, div {
   margin: 0;
   user-select: none;  
   -webkit-user-select: none;
+  -moz-user-select: none;
 }
 body {
   background: #999;
@@ -27,7 +28,8 @@ body {
   width: 100px;
   height: 200px;
   background: #A3A3A3;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   margin: 50px 20px;
   padding: 30px;  
   -webkit-border-radius: 4px;
