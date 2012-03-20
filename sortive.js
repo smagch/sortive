@@ -24,7 +24,7 @@
     // could be selector string, element,
     // array of elements or jquery object
     acceptiveFrom: '*',
-    // TODO - enable self
+    // TODO - enable clone
     placeholder: '<h2>this is pleceholder</h2>',
     
     // TODO
@@ -86,12 +86,12 @@
       //   data.scrollElement = $(data.scrollElement);
       // }
     },
-    
-    getAcceptive : function() {
+
+    getAcceptives : function() {
       var ret = [ ];
       this.each(function() {
         var $self = $(this);
-        
+
         _.each(container, function(sortive) {
           var options = $(sortive).data('sortive');
           if(!$self.is(sortive) ) {
@@ -106,58 +106,67 @@
       return ret;
     }
   },
-  
-  getRects = function(sortives, $target, elementIndex, options) {
-    // TODO cache scrollEl somewhere
-    var $scrollEl = options.scrollElement === 'self' ? $target : $(options.scrollElement),
-      scrollTop = $scrollEl.scrollTop(),
-      scrollLeft = $scrollEl.scrollLeft();
-    function toGlobal(offset) {
-      return {
-        left: offset.left + scrollLeft,
-        top: offset.top + scrollTop
-      };
-    }
-    
-    return _.map(sortives, function(sortive) {
+
+  toGlobal = function(offset, data) {
+    return {
+      left: offset.left + data.scrollLeft,
+      top: offset.top + data.scrollTop
+    };
+  },
+
+  getRects = function($acceptives, data) {
+    var $target = data.$sortive,
+      elementIndex = data.originalIndex,
+      options = data.options;
+
+    return _.map($acceptives, function(sortive) {
       var $sortive = $(sortive),
-      selfOffset = toGlobal($sortive.offset()),
-      rect = _.extend( {}, selfOffset, {
-        right : selfOffset.left + $sortive.width(),
-        bottom : selfOffset.top + $sortive.height()
-      }),
+        selfOffset = toGlobal($sortive.offset(), data),
+        rect = _.extend( {}, selfOffset, {
+          right : selfOffset.left + $sortive.width(),
+          bottom : selfOffset.top + $sortive.height()
+        }),
+        isSelfSort = $target.is(sortive);
+      // bounding rects of sortive instance
+      return {
+        rect: rect,
+        $el: $sortive,
+        //children : dimensions,
+        isSelfSort: isSelfSort,
+        // TODO - somewhere else
+        elementIndex: elementIndex
+      };
+    });
+  },
+
+  getDimensions = function(rect, data) {
+    var options = data.options,
       dimensions = {
         top : [],
         bottom : [],
         $el: []
-      },
-      isSelfSort = $target.is(sortive);
-      
-      $sortive.children(options.item).each(function() {
-        var $self = $(this),
-          offset = toGlobal($self.offset());
-          dimensions.top.push(offset.top);
-          dimensions.bottom.push(offset.top + $self.height());
-          dimensions.$el.push($self);
-        });
-      
-      // if selfSort, remove dragging element's dimension
-      if(isSelfSort) {
-        dimensions.top.splice(elementIndex, 1);
-        dimensions.bottom.splice(elementIndex, 1);
-        dimensions.$el.splice(elementIndex, 1);
-      }
-      
-      return {
-        // bounding rect of sortive instance
-        rect : rect,
-        children : dimensions,
-        isSelfSort : isSelfSort,
-        $el : $sortive
       };
+
+    rect.$el.children(options.item).each(function() {
+      var $self = $(this),
+        offset = toGlobal($self.offset(), data);
+      dimensions.top.push(offset.top);
+      dimensions.bottom.push(offset.top + $self.height());
+      dimensions.$el.push($self);
     });
+
+    // if selfSort, remove dragging element's dimension
+    if(rect.isSelfSort) {
+      var elementIndex = rect.elementIndex;
+      dimensions.top.splice(elementIndex, 1);
+      dimensions.bottom.splice(elementIndex, 1);
+      dimensions.$el.splice(elementIndex, 1);
+    }
+
+    rect.children = dimensions;
+    return dimensions;
   },
-  
+
   downHandler = function(e) {
     // TODO - when missed mouseup event, should excute upHandler
     // if( $el ) {
@@ -200,7 +209,7 @@
     
     $(document).one('mouseup.sortive', timeoutHandler);
   },
-  
+
   startDrag = function(e) {
     var $sortive = $(e.delegateTarget),
     options = $sortive.data('sortive'),
@@ -209,19 +218,17 @@
     w = $self.width(),
     h = $self.height(),
     index = $self.index(),
-    
+
     offsetX = offset.left - e.clientX,
     offsetY = offset.top - e.clientY,
-    
-    acceptives = $sortive.sortive('getAcceptive'),
-    
+
+    $acceptives = $sortive.sortive('getAcceptives'),
+
     $scrollEl = options.scrollElement === 'self' ? $sortive : $(options.scrollElement),
-    
+
     $clone = $self
       .clone()
       .css({
-        //left: $scrollEl.scrollLeft() + offset.left,
-        //top: $scrollEl.scrollTop() + offset.top,
         left: offset.left,
         top: offset.top,
         position: 'absolute',
@@ -230,10 +237,7 @@
         zIndex: options.zIndex
       })
       .addClass(options.cloneClass)
-      //appendTo(options.scrollElement),
       .appendTo(options.appendTo),
-
-    rects = ( !!acceptives.length && getRects(acceptives, $sortive, index, options)),
 
     data = {
       $original: $self,
@@ -241,7 +245,6 @@
       $clone: $clone,
       $sortive: $sortive,
       $placeholder: null,
-      rects: rects,
       offsetX: offsetX,
       offsetY: offsetY,
       centerOffsetX: w * 0.5,
@@ -249,10 +252,13 @@
       height: h,
       originalIndex: index,
       options: options,
+      scrollTop: $scrollEl.scrollTop(),
+      scrollLeft: $scrollEl.scrollLeft(),
       currentIndex : (options.selfSort && index)
     };
 
-    //currentIndex = data.originalIndex;
+    data.rects = ( !!$acceptives.length && getRects($acceptives, data));
+    // TODO - if no acceptive, should be return??
     $self.addClass(options.selectClass);
     $(document)
       .on('mousemove.sortive', data, moveHandler)
@@ -281,13 +287,11 @@
     }
     eventData.clear();
   },
-  
-  
-  
+
   isOutOfBound = function(rect, x, y) {
     return x < rect.left || x > rect.right || y < rect.top || y > rect.bottom;
   },
-  
+
   eventData = (function(){
     var _data = { },
     ret = function(data) {
@@ -305,44 +309,41 @@
     };
     return ret;
   })(),
-  
+
   moveHandler = function(e) {
     var data = e.data,
-    $clone = data.$clone,
-    offset = {
-      //left : data.$scrollEl.scrollLeft() + data.offsetX + e.clientX,
-      //top : data.$scrollEl.scrollTop() + data.offsetY + e.clientY
-      left: data.offsetX + e.clientX,
-      top: data.offsetY + e.clientY
-    },
-    rects = e.data.rects,
-    // TODO - currently only support up and down
-    direction;
-    
+      $clone = data.$clone,
+      offset = {
+        left: data.offsetX + e.clientX,
+        top: data.offsetY + e.clientY
+      },
+      rects = e.data.rects,
+      // TODO - currently only support up and down
+      direction;
+
     $clone.css(offset);
-    
     offset.left += data.$scrollEl.scrollLeft();
     offset.top += data.$scrollEl.scrollTop();
     if( !data.rects ) {
       return;
     }
-    
+
     var x =  offset.left + data.centerOffsetX,
         y =  offset.top + data.centerOffsetY,
         targetRect = _.find(rects, function(rect) {
           return !isOutOfBound(rect.rect, x, y);
         });
-    
+
     if(!targetRect) {
       var eData = eventData(),
-          $focusedTarget = eData && eData.$target;
-      if( $focusedTarget ) {
+        $focusedTarget = eData && eData.$target;
+      if($focusedTarget) {
         $focusedTarget.trigger('sortfocusout');
       }
       eventData.clear();
       data.$placeholder && data.$placeholder.remove();
     } else {
-      var dimensions = targetRect.children;
+      var dimensions = targetRect.children || getDimensions(targetRect, data);
       // if not selfSort, use top
       if( targetRect.isSelfSort && data.$original.offset().top < offset.top ) {
         direction = 'bottom';
@@ -350,7 +351,7 @@
       } else {
         direction = 'top';
       }
-      
+
       var index = _.sortedIndex( dimensions[direction], offset[direction]);
       // TODO - targetRect change
       if( index !== data.currentIndex ) {
@@ -370,7 +371,7 @@
           $original: data.$original,
           $target: targetRect.$el
         });
-        
+
         if(data.originalIndex === index && targetRect.isSelfSort) {
           data.$placeholder && data.$placeholder.remove();
         } else if(index !== dimensions.top.length) {
@@ -384,8 +385,7 @@
       }
     }
   };
-  
-  
+
   $.fn['sortive'] = function(method) {
     if( methods[method] ) {
       return methods[method].apply(this, Array.prototype.slice.call( arguments, 1 ));
