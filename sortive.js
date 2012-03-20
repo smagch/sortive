@@ -1,5 +1,5 @@
 (function($, _){
-  
+  'use strict';
   // TODO - make clone flag
   // TODO - consider $.data rather than event.data
   // TODO - consider invalidate method
@@ -11,7 +11,7 @@
     match: '',
     // drag except selector inside item
     exclude: 'a',
-    
+
     zIndex: 1000,
     appendTo: 'body',
     cloneClass: 'dragging',
@@ -19,14 +19,14 @@
     // selector
     scrollElement: 'self',
     delay: 400,
-    
+
     acceptive: true,
     // could be selector string, element,
     // array of elements or jquery object
     acceptiveFrom: '*',
     // TODO - enable clone
     placeholder: '<h2>this is pleceholder</h2>',
-    
+
     // TODO
     // if true, clone is automatically removed,
     // if false, clone is passed when mouseup
@@ -48,7 +48,7 @@
   methods = {
     init : function(options) {
       options = $.extend({}, defaults, options);
-      
+
       // reset all sortive elements
       // determine which containers is acceptive to this
       this
@@ -57,11 +57,10 @@
         .each(function() {
           container.push(this);
         });
-      
+
       return this;
     },
     destroy : function() {
-      
       this
         .removeData('sortive')
         .off('mousedown.sortive')
@@ -69,22 +68,17 @@
           var index = _.indexOf(this);
           container.splice(index, 1);
         });
-      
       return this;
     },
-    
+
     options : function(options) {
       var data = this.data('sortive');
+      // getter
       if(!options) {
         return data;
       }
-      
+      // setter
       $.extend(data, options);
-      // if(data.scrollElement === 'self') {
-      //   data.scrollElement = $(this);
-      // } else {
-      //   data.scrollElement = $(data.scrollElement);
-      // }
     },
 
     getAcceptives : function() {
@@ -107,13 +101,6 @@
     }
   },
 
-  toGlobal = function(offset, data) {
-    return {
-      left: offset.left + data.$scrollEl.scrollLeft(),
-      top: offset.top + data.$scrollEl.scrollTop()
-    };
-  },
-
   getRects = function($acceptives, data) {
     var $target = data.$sortive,
       elementIndex = data.originalIndex,
@@ -121,10 +108,10 @@
 
     return _.map($acceptives, function(sortive) {
       var $sortive = $(sortive),
-        selfOffset = toGlobal($sortive.offset(), data),
-        rect = _.extend( {}, selfOffset, {
-          right : selfOffset.left + $sortive.width(),
-          bottom : selfOffset.top + $sortive.height()
+        offset = $sortive.offset(),
+        rect = _.extend( offset, {
+          right : offset.left + $sortive.width(),
+          bottom : offset.top + $sortive.height()
         }),
         isSelfSort = $target.is(sortive);
       // bounding rects of sortive instance
@@ -140,7 +127,6 @@
   },
 
   getDimensions = function(rect, data) {
-    console.log('getDimensions');
     var options = data.options,
       dimensions = {
         top : [],
@@ -150,7 +136,8 @@
 
     rect.$el.children(options.item).each(function() {
       var $self = $(this),
-        offset = toGlobal($self.offset(), data);
+        offset = $self.offset();
+
       dimensions.top.push(offset.top);
       dimensions.bottom.push(offset.top + $self.height());
       dimensions.$el.push($self);
@@ -274,7 +261,6 @@
     data.$clone.remove();
     data.$placeholder && data.$placeholder.remove();
 
-    //e.data.$sortive.trigger('itemdropped', eventData());
     var dataToSend = eventData();
     if( dataToSend ){
       // TODO - send clone itself
@@ -316,19 +302,19 @@
         left: data.offsetX + e.clientX,
         top: data.offsetY + e.clientY
       },
-      rects = e.data.rects,
+      rects = data.rects,
+      $scrollEl = data.$scrollEl,
       // TODO - currently only support up and down
       direction;
 
     $clone.css(offset);
-    offset.left += data.$scrollEl.scrollLeft();
-    offset.top += data.$scrollEl.scrollTop();
+
     if( !data.rects ) {
       return;
     }
 
-    var x =  offset.left + data.centerOffsetX,
-        y =  offset.top + data.centerOffsetY,
+    var x = offset.left + data.centerOffsetX,
+        y = offset.top + data.centerOffsetY,
         targetRect = _.find(rects, function(rect) {
           return !isOutOfBound(rect.rect, x, y);
         });
@@ -342,6 +328,12 @@
       eventData.clear();
       data.$placeholder && data.$placeholder.remove();
     } else {
+      // if selfsort, add scroll
+      if(targetRect.isSelfSort) {
+        offset.left += $scrollEl.scrollLeft();
+        offset.top += $scrollEl.scrollTop();
+      }
+
       var dimensions = targetRect.children || getDimensions(targetRect, data);
       // if not selfSort, use top
       if( targetRect.isSelfSort && data.$original.offset().top < offset.top ) {
