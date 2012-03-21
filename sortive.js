@@ -127,7 +127,6 @@
   },
 
   getDimensions = function(rect, data) {
-    console.log('get dimension');
     var options = data.options,
       dimensions = {
         top : [],
