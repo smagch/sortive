@@ -1,3 +1,6 @@
+// jquery sort plugin for backbone.js
+// currently underscore dependent
+// https://github.com/smagch/sortive
 (function($, _){
   'use strict';
   // TODO - make clone flag
