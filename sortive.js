@@ -331,6 +331,7 @@
         $focusedTarget.trigger('sortfocusout');
       }
       eventData.clear();
+      delete data.currentIndex;
       data.$placeholder && data.$placeholder.remove();
     } else {
       // if selfsort, add scroll
